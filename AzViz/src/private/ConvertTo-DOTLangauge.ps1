@@ -141,6 +141,7 @@ function ConvertTo-DOTLanguage {
                     $fromcateg = $_.fromcateg
                     $to = $_.to
                     $tocateg = $_.tocateg
+                    $subnet = $_.subnetId
                     if ($_.isdependent) {
                         $edges += Edge -From "$fromcateg/$from".tolower() `
                                         -to "$tocateg/$to".tolower() `
@@ -158,7 +159,7 @@ function ConvertTo-DOTLanguage {
                             $nodes += Get-ImageNode -Name "$tocateg/$to".tolower() -Rows $to -Type $tocateg -ErrorAction SilentlyContinue
                         }
                         elseif ($LabelVerbosity -eq 2) {
-                            $nodes += Get-ImageNode -Name "$fromcateg/$from".tolower() -Rows ($from, $fromcateg) -Type $fromcateg -ErrorAction SilentlyContinue
+                            $nodes += Get-ImageNode -Name "$fromcateg/$from".tolower() -Rows ($from, $fromcateg, $subnet) -Type $fromcateg -ErrorAction SilentlyContinue
                             $nodes += Get-ImageNode -Name "$tocateg/$to".tolower() -Rows ($to, $toCateg) -Type $tocateg -ErrorAction SilentlyContinue
                         }
                     }
@@ -194,9 +195,21 @@ function ConvertTo-DOTLanguage {
                             $nodes += Get-ImageNode -Name "$fromcateg/$from".tolower() -Rows $from -Type $fromcateg -ErrorAction SilentlyContinue
                         }
                         elseif ($LabelVerbosity -eq 2) {
-                            $nodes += Get-ImageNode -Name "$fromcateg/$from".tolower() -Rows ($from, $fromcateg) -Type $fromcateg -ErrorAction SilentlyContinue
+                            $nodes += Get-ImageNode -Name "$fromcateg/$from".tolower() -Rows ($from, $fromcateg, $subnet) -Type $fromcateg -ErrorAction SilentlyContinue
                         }
                     }
+
+                    
+                    # --- co-pilot suggestion ---
+                    # --- New logic: Link App Services to VNets ---
+                    #Write-CustomHost -String "Resource properties: $($_ | Out-String)" -Indentation 2 -color Yellow
+                    # rolled back copilot suggestions in favour of my own.
+                    #  uncomment the info line above for useful info, if not outputting what you expect.
+                    # --- End of new logic ---
+                    # --- End of co-pilot suggestion ---
+
+                        
+
                 } | 
                 Select-Object -Unique
 

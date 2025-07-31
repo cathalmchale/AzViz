@@ -103,6 +103,9 @@ function ConvertFrom-ARM {
                             tocateg     = $dependency.tostring().replace("[resourceId(", "").replace(")]", "").Split(",")[0].replace("'", "").trim().Split("/")[0..1] -join '/' #.split('/')[-1]
                             isdependent = $true
                             rank        = if ($r) { $r }else { 9999 }
+
+                            #temporary debug test
+                            subnetId = $_.properties.virtualNetworkSubnetId
                         }
                     }
                 }
@@ -115,6 +118,9 @@ function ConvertFrom-ARM {
                         tocateg     = ''
                         isdependent = $false
                         rank        = if ($r) { $r }else { 9999 }
+
+                        #temporary debug test
+                        subnetId = $_.properties.virtualNetworkSubnetId
                     }
                 }
             } | 
