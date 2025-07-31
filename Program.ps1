@@ -13,5 +13,5 @@ Import-Module AzViz -Scope Local -Verbose
 #$debugRg = @('rg-intune-pro')
 $debugRg = @('rg-core-pro')
 $excludeTypes = @("*slots","*smartDetectorAlertRules","*disks","*snapshots","*certificates","*privateDnsZones")
-Export-AzViz -ResourceGroup $debugRg -ExcludeTypes $excludeTypes -Theme light -OutputFormat png -Show -LabelVerbosity 2
+Export-AzViz -ResourceGroup $debugRg -ExcludeTypes $excludeTypes -Theme light -OutputFormat png -Show -LabelVerbosity 2 -SkipNetwork
 

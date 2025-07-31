@@ -691,6 +691,7 @@ $Images = @{
     "Microsoft.Compute/snapshots"                                                                = "DiskSnapshots.png"
     "Microsoft.ContainerInstance/containerGroups"                                                = "containerinstances.png"
     "Microsoft.ContainerRegistry/registries"                                                     = "docker.png"
+    "Microsoft.ContainerService/managedClusters"                                                 = "k8s.png"
     "Microsoft.DocumentDB/databaseAccounts"                                                      = "cosmosdb.png"
     "Microsoft.DocumentDB/databaseAccounts/apis/databases"                                       = "cosmosdb.png"
     "Microsoft.DocumentDB/databaseAccounts/apis/databases/collections"                           = "cosmosdb.png"

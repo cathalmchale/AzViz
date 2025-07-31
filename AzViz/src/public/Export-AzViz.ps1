@@ -88,6 +88,12 @@ function Export-AzViz {
         # [Parameter(ParameterSetName = 'FilePath')]
         # [Parameter(ParameterSetName = 'Url')]
         [switch] $Show,
+
+        # Skip network part - handy if lots of objects and very slow
+        [Parameter(ParameterSetName = 'AzLogin')]
+        # [Parameter(ParameterSetName = 'FilePath')]
+        # [Parameter(ParameterSetName = 'Url')]
+        [switch] $SkipNetwork,
         
         # Level of information to included in vizualization
         [Parameter(ParameterSetName = 'AzLogin')]
@@ -266,7 +272,7 @@ function Export-AzViz {
         #region graph-generation
         Write-CustomHost "Starting to generate Azure visualization..." -Indentation 0 -color Magenta -AddTime
     
-        $graph = ConvertTo-DOTLanguage -TargetType $TargetType -Targets $Targets -CategoryDepth $CategoryDepth -LabelVerbosity $LabelVerbosity -Splines $Splines -ExcludeTypes $ExcludeTypes
+        $graph = ConvertTo-DOTLanguage -TargetType $TargetType -Targets $Targets -CategoryDepth $CategoryDepth -LabelVerbosity $LabelVerbosity -Splines $Splines -ExcludeTypes $ExcludeTypes -SkipNetwork:$SkipNetwork
 
         if ($graph) {
             @"

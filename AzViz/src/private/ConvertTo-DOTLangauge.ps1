@@ -8,7 +8,8 @@ function ConvertTo-DOTLanguage {
         [int] $CategoryDepth = 1,
         [string] $Direction = 'top-to-bottom',
         [string] $Splines = 'spline',
-        [string[]] $ExcludeTypes
+        [string[]] $ExcludeTypes,
+        [switch] $SkipNetwork
     )
     
     begin {
@@ -26,8 +27,10 @@ function ConvertTo-DOTLanguage {
         
         $SpecialChars = '() []{}&-.'
         $GraphObjects = @()
-        $NetworkObjects = ConvertFrom-Network -TargetType $TargetType -Targets $Targets -CategoryDepth $CategoryDepth -ExcludeTypes $ExcludeTypes
-        $GraphObjects += $NetworkObjects
+        if (-not $SkipNetwork) {
+            $NetworkObjects = ConvertFrom-Network -TargetType $TargetType -Targets $Targets -CategoryDepth $CategoryDepth -ExcludeTypes $ExcludeTypes
+            $GraphObjects += $NetworkObjects
+        }
         $ARMObjects = ConvertFrom-ARM -TargetType $TargetType -Targets $Targets -CategoryDepth $CategoryDepth -ExcludeTypes $ExcludeTypes
         $GraphObjects += $ARMObjects
 
