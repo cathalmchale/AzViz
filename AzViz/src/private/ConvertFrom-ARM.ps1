@@ -116,7 +116,6 @@ function ConvertFrom-ARM {
                             isdependent = $true
                             rank        = if ($r) { $r }else { 9999 }
 
-                            #temporary debug test
                             subnetId = $_.properties.virtualNetworkSubnetId
                         }
                     }
@@ -131,7 +130,6 @@ function ConvertFrom-ARM {
                         isdependent = $false
                         rank        = if ($r) { $r }else { 9999 }
 
-                        #temporary debug test
                         subnetId = $_.properties.virtualNetworkSubnetId
                     }
                 }

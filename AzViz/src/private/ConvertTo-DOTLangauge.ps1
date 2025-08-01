@@ -9,6 +9,7 @@ function ConvertTo-DOTLanguage {
         [string] $Direction = 'top-to-bottom',
         [string] $Splines = 'spline',
         [string[]] $ExcludeTypes,
+        [int] $SubnetResourceRowLimit,
         [switch] $SkipNetwork
     )
     
@@ -87,7 +88,7 @@ function ConvertTo-DOTLanguage {
                         # }
                         # else{
                         foreach ($subnet in $Subnets) {
-    
+                        
                             $SubnetLabel = Get-ImageLabel -Type "Subnets" -Row1 "$($Subnet.Name)" -Row2 "$([string]$Subnet.AddressPrefix)"
                             $SubnetSubGraphName = Remove-SpecialChars -String $Subnet.Name -SpecialChars $SpecialChars
                             $SubnetSubGraphAttributes = @{
@@ -96,12 +97,12 @@ function ConvertTo-DOTLanguage {
                                 penwidth = "1";
                                 fontname = "Courier New" ;
                                 style    = "rounded,dashed";
-                                color    = $SubnetGraphColor
-                                bgcolor  = $SubnetGraphBGColor; 
+                                color    = $SubnetGraphColor;
+                                bgcolor  = $SubnetGraphBGColor;
                             }
-    
-                            # generating dot language for subnets inside virtual networks    
+                        
                             SubGraph -Name $SubnetSubGraphName -Attributes $SubnetSubGraphAttributes -ScriptBlock {    
+                                $hasHierarchy = $false
                                 $resources_in_subnet = foreach ($item in $VMs_and_NICs) {
                                     switch ($item.Type) {
                                         'Microsoft.Compute/virtualMachines' {
@@ -112,16 +113,50 @@ function ConvertTo-DOTLanguage {
                                             $subnetName = $item.IpConfigurations[0].Subnet.Id.split('/')[-1] 
                                         }
                                     }
-        
+                        
                                     if ($subnetName -eq $subnet.Name) {
+                                        if ($item.Type -eq 'Microsoft.Compute/virtualMachines') {
+                                            $hasHierarchy = $true
+                                        }
                                         $item | Select-Object Name, Type
                                     }
                                 }
-        
-                                $resources_in_subnet |
-                                ForEach-Object {
-                                    Get-ImageNode -Name "$($_.Type)/$($_.Name)".tolower() -Rows $_.Name -Type $_.Type
+                                
+                                
+                                # --- NEW: Group resources into rows ---
+                                if (-not $hasHierarchy) {
+                                    $resourceNodes = @()
+                                    $resourceNodeNames = @()
+                                    foreach ($resource in $resources_in_subnet) {
+                                        $nodeDef = Get-ImageNode -Name "$($resource.Type)/$($resource.Name)".tolower() -Rows $resource.Name -Type $resource.Type
+                                        $resourceNodes += $nodeDef
+                                        $resourceNodeNames += "$($resource.Type)/$($resource.Name)".tolower()
+                                    }
+
+                                    # Emit all node definitions first
+                                    $resourceNodes
+
+                                    # Then group node names into rows and apply Rank
+                                    $resourcesPerRow = $SubnetResourceRowLimit
+                                    $lastNodeOfPrevRow = $null
+                                    for ($i = 0; $i -lt $resourceNodeNames.Count; $i += $resourcesPerRow) {
+                                        $rowNodeNames = $resourceNodeNames[$i..([math]::Min($i + $resourcesPerRow - 1, $resourceNodeNames.Count - 1))]
+                                        Rank -Nodes $rowNodeNames
+
+                                        # Add invisible edge to force vertical stacking
+                                        if ($lastNodeOfPrevRow) {
+                                            Edge -From $lastNodeOfPrevRow -To $rowNodeNames[0] -Attributes @{ style = 'invis' }
+                                        }
+                                        $lastNodeOfPrevRow = $rowNodeNames[-1]
+                                    }
+
+                                } else {
+                                    # --- Default rendering (no row grouping) ---
+                                    foreach ($resource in $resources_in_subnet) {
+                                        Get-ImageNode -Name "$($resource.Type)/$($resource.Name)".tolower() -Rows $resource.Name -Type $resource.Type
+                                    }
                                 }
+                                # --- END NEW ---
                             }
                         }
                         # }
