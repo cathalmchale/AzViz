@@ -18,13 +18,29 @@ Function Get-ImageNode {
     $TR = ''
     $flag = $true
     foreach ($r in $Rows) {
+        if (-not $r) {
+            continue
+        }
+
         if ($flag) {
             # Write-Verbose "   > Creating Node: $r"
             $TR += '<TR><TD align="center" colspan="2"><B><FONT POINT-SIZE="11">{0}</FONT></B></TD></TR>' -f $r
             $flag = $false
         }
         else {
-            $TR += '<TR><TD align="right"><FONT POINT-SIZE="9">Provider:</FONT></TD><TD align="left"><FONT POINT-SIZE="9">{0}</FONT></TD></TR><TR><TD align="right"><FONT POINT-SIZE="9">Type:</FONT></TD><TD align="left"><FONT POINT-SIZE="9">{1}</FONT></TD></TR>' -f $r.Split('/', 2)
+            $overrideColor = $null
+            # Rudimentary, but will do for now.
+            if ($r -like '*virtualNetworks*') {
+                $propertyKey = 'Subnet'
+                $parts = $r -split '/'
+                $propertyVal = ($parts | Select-Object -Last 3) -join '/'
+                $overrideColor = $NetworkEdgeColor
+            } else {
+                $propertyKey = 'Meta'
+                $propertyVal = $r
+            }
+            $fontColorAttr = $overrideColor ? " COLOR='$overrideColor'" : ""
+            $TR += '<TR><TD align="right"><FONT POINT-SIZE="9"{0}>{1}:</FONT></TD><TD align="left"><FONT POINT-SIZE="9"{0}>{2}</FONT></TD></TR>' -f $fontColorAttr, $propertyKey, $propertyVal
         }
     }
 

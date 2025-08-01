@@ -30,7 +30,19 @@ function ConvertFrom-ARM {
 
         # $scriptblock = [scriptblock]::Create($Excluded_ARMObjects.ForEach({'$_.type -NotLike "{0}"' -f $_}) -join ' -and ')
         # $scriptblock = [scriptblock]::Create($Excluded_ARMObjects.ForEach({'$_.fromcateg -NotLike "{0}" -and $_.tocateg -NotLike "{0}"' -f $_}) -join ' -and ')
-        $scriptblock = [scriptblock]::Create( $Excluded_ARMObjects.ForEach( { '$_.fromcateg -NotLike "{0}" -and $_.tocateg -NotLike "{0}"' -f $_ }) -join ' -and ' )
+        $scriptblock = {
+            # AKS is a weird one - type is 'Microsoft.ContainerService/managedClusters' but it's linked to 'Microsoft.Network/virtualNetworks'
+            if ($_.fromcateg -eq 'Microsoft.ContainerService/managedClusters') {
+                return $true
+            }
+            $exclude = $Excluded_ARMObjects
+            foreach ($pattern in $exclude) {
+                if ($_.fromcateg -like $pattern -or $_.tocateg -like $pattern) {
+                    return $false
+                }
+            }
+            return $true
+        }
     }
     
     process {
@@ -103,6 +115,8 @@ function ConvertFrom-ARM {
                             tocateg     = $dependency.tostring().replace("[resourceId(", "").replace(")]", "").Split(",")[0].replace("'", "").trim().Split("/")[0..1] -join '/' #.split('/')[-1]
                             isdependent = $true
                             rank        = if ($r) { $r }else { 9999 }
+
+                            subnetId = $_.properties.virtualNetworkSubnetId
                         }
                     }
                 }
@@ -115,6 +129,8 @@ function ConvertFrom-ARM {
                         tocateg     = ''
                         isdependent = $false
                         rank        = if ($r) { $r }else { 9999 }
+
+                        subnetId = $_.properties.virtualNetworkSubnetId
                     }
                 }
             } | 

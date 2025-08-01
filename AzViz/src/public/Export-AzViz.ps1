@@ -88,6 +88,12 @@ function Export-AzViz {
         # [Parameter(ParameterSetName = 'FilePath')]
         # [Parameter(ParameterSetName = 'Url')]
         [switch] $Show,
+
+        # Skip network part - handy if lots of objects and very slow
+        [Parameter(ParameterSetName = 'AzLogin')]
+        # [Parameter(ParameterSetName = 'FilePath')]
+        # [Parameter(ParameterSetName = 'Url')]
+        [switch] $SkipNetwork,
         
         # Level of information to included in vizualization
         [Parameter(ParameterSetName = 'AzLogin')]
@@ -102,6 +108,12 @@ function Export-AzViz {
         # [Parameter(ParameterSetName = 'Url')]
         [ValidateSet(1, 2, 3)]
         [int] $CategoryDepth = 1,
+
+        # Limit the number of resources per row and force onto new row, if necessary
+        [Parameter(ParameterSetName = 'AzLogin')]
+        # [Parameter(ParameterSetName = 'FilePath')]
+        # [Parameter(ParameterSetName = 'Url')]
+        [int] $SubnetResourceRowLimit = 10,
         
         # Output format of the vizualization
         [Parameter(ParameterSetName = 'AzLogin')]
@@ -266,7 +278,7 @@ function Export-AzViz {
         #region graph-generation
         Write-CustomHost "Starting to generate Azure visualization..." -Indentation 0 -color Magenta -AddTime
     
-        $graph = ConvertTo-DOTLanguage -TargetType $TargetType -Targets $Targets -CategoryDepth $CategoryDepth -LabelVerbosity $LabelVerbosity -Splines $Splines -ExcludeTypes $ExcludeTypes
+        $graph = ConvertTo-DOTLanguage -TargetType $TargetType -Targets $Targets -CategoryDepth $CategoryDepth -LabelVerbosity $LabelVerbosity -Splines $Splines -ExcludeTypes $ExcludeTypes -SkipNetwork:$SkipNetwork -SubnetResourceRowLimit $SubnetResourceRowLimit
 
         if ($graph) {
             @"
